@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Commission Calculator</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-primary': '#2563eb', /* Tailwind blue-600 */
+                        'brand-light': '#bfdbfe', /* Tailwind blue-200 */
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom styles for appearance */
+        .shadow-custom {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        /* Custom list style for the dropdown */
+        #product-suggestion-list {
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans p-4 sm:p-8 min-h-screen flex justify-center">
+
+    <div class="max-w-6xl w-full">
+        <!-- Header -->
+        <header class="mb-10 text-center bg-brand-primary p-6 rounded-xl shadow-custom">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-white">Commission Calculator</h1>
+            <p class="text-white/80 mt-2 text-sm sm:text-base">Estimate your total earnings by selecting products and quantities.</p>
+        </header>
+
+        <!-- Main Grid Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left Column: Product Selector (2/3 width on large screens) -->
+            <div class="lg:col-span-2 space-y-8">
+                
+                <!-- Add Product Interface -->
+                <section class="bg-white p-6 rounded-xl shadow-md border-t-4 border-brand-primary">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Add Products to Estimate
+                    </h2>
+                    
+                    <div class="relative mb-4">
+                        <input type="text" id="product-search-input" placeholder="Search product name or category..." 
+                               class="w-full py-3 pl-4 pr-12 border border-gray-300 rounded-lg shadow-sm focus:border-brand-primary focus:ring-brand-primary focus:ring-1 transition duration-150 text-gray-700">
+                        <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        
+                        <!-- Product Suggestion Dropdown -->
+                        <div id="product-suggestion-list" class="absolute w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg hidden">
+                            <!-- Suggestions populate here -->
+                        </div>
+                    </div>
+
+                    <div id="selected-products-message" class="text-sm text-gray-500 italic p-2 bg-gray-50 rounded">
+                        <p>No products selected yet. Use the search bar to find and add products.</p>
+                    </div>
+
+                </section>
+
+                <!-- Selected Products List (Basket) -->
+                <section class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        Your Sales Basket
+                    </h2>
+                    
+                    <div id="sales-basket" class="divide-y divide-gray-200">
+                        <!-- Added products will be displayed here -->
+                    </div>
+                </section>
+                
+            </div>
+
+            <!-- Right Column: Total Summary (1/3 width on large screens) -->
+            <div class="lg:col-span-1">
+                <section class="sticky top-4 bg-white p-6 rounded-xl shadow-custom border-t-4 border-brand-primary">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        Total Commission Estimate
+                    </h2>
+                    
+                    <div id="total-commission-box" class="text-center p-6 bg-brand-light rounded-lg">
+                        <p class="text-sm font-medium text-gray-700">Estimated Total Commission (CHF)</p>
+                        <p id="total-commission-amount" class="text-5xl font-extrabold text-brand-primary mt-1">0.00</p>
+                    </div>
+
+                    <button onclick="clearBasket()" class="mt-4 w-full bg-red-500 text-white py-2 rounded-lg font-semibold hover:bg-red-600 transition duration-200 shadow-md">
+                        Clear All Sales
+                    </button>
+                    
+                </section>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        // --- Commission Data ---
+        // Stored as an Array for easy filtering and searching.
+        const COMMISSION_DATA = [
+            // Festnetz, Internet & TV
+            { id: 1, category: "Festnetz, Internet & TV", item: "TV neo max 12 Months", rate: 18.75 },
+            { id: 2, category: "Festnetz, Internet & TV", item: "TV neo max 1 Month", rate: 1.34 },
+            { id: 3, category: "Festnetz, Internet & TV", item: "TV neo max 24 Months", rate: 18.75 },
+            { id: 4, category: "Festnetz, Internet & TV", item: "Up TV M solo 12 Months", rate: 18.75 },
+            { id: 5, category: "Festnetz, Internet & TV", item: "Up TV M solo 1 Month", rate: 1.34 },
+            { id: 6, category: "Festnetz, Internet & TV", item: "Up TV M solo 24 Months", rate: 18.75 },
+            { id: 7, category: "Festnetz, Internet & TV", item: "Easy Internet Connect 2.5 Gb RP", rate: 19.56 },
+            { id: 8, category: "Festnetz, Internet & TV", item: "Easy Internet Connect 2.5 Gb Up Phone", rate: 19.56 },
+            { id: 9, category: "Festnetz, Internet & TV", item: "Easy Internet Connect RP", rate: 19.56 },
+            { id: 10, category: "Festnetz, Internet & TV", item: "Easy Internet Connect Up Phone", rate: 19.56 },
+            { id: 11, category: "Festnetz, Internet & TV", item: "Easy Internet Home 2.5 Gb Easy TV L", rate: 24.65 },
+            { id: 12, category: "Festnetz, Internet & TV", item: "Easy Internet Home 2.5 Gb RP", rate: 24.65 },
+            { id: 13, category: "Festnetz, Internet & TV", item: "Easy Internet Home 2.5 Gb Up Phone", rate: 24.65 },
+            { id: 14, category: "Festnetz, Internet & TV", item: "Easy Internet Home 2.5 Gb Up Phone Easy TV L", rate: 24.65 },
+            { id: 15, category: "Festnetz, Internet & TV", item: "Easy Internet Home Easy TV L", rate: 24.65 },
+            { id: 16, category: "Festnetz, Internet & TV", item: "Easy Internet Home Up Phone L Easy TV L", rate: 24.65 },
+            { id: 17, category: "Festnetz, Internet & TV", item: "Up Internet Connect L Basic TV free", rate: 19.56 },
+            { id: 18, category: "Festnetz, Internet & TV", item: "Up Internet Connect L Phone", rate: 19.56 },
+            { id: 19, category: "Festnetz, Internet & TV", item: "Up Internet Connect L Phone Basic TV free", rate: 19.56 },
+            { id: 20, category: "Festnetz, Internet & TV", item: "Up Internet Connect L RP", rate: 19.56 },
+            { id: 21, category: "Festnetz, Internet & TV", item: "Up Internet Connect M Basic TV free", rate: 14.74 },
+            { id: 22, category: "Festnetz, Internet & TV", item: "Up Internet Connect M Phone", rate: 14.74 },
+            { id: 23, category: "Festnetz, Internet & TV", item: "Up Internet Connect M Phone Basic TV free", rate: 14.74 },
+            { id: 24, category: "Festnetz, Internet & TV", item: "Up Internet Connect M RP", rate: 14.74 },
+            { id: 25, category: "Festnetz, Internet & TV", item: "Up Internet Connect XL Basic TV free", rate: 21.97 },
+            { id: 26, category: "Festnetz, Internet & TV", item: "Up Internet Connect XL Phone", rate: 21.97 },
+            { id: 27, category: "Festnetz, Internet & TV", item: "Up Internet Connect XL Phone Basic TV free", rate: 21.97 },
+            { id: 28, category: "Festnetz, Internet & TV", item: "Up Internet Connect XL RP", rate: 21.97 },
+            { id: 29, category: "Festnetz, Internet & TV", item: "Up Internet Home L Phone TV L Home", rate: 24.65 },
+            { id: 30, category: "Festnetz, Internet & TV", item: "Up Internet Home L Phone TV M Home", rate: 24.65 },
+            { id: 31, category: "Festnetz, Internet & TV", item: "Up Internet Home L TV L Home", rate: 24.65 },
+            { id: 32, category: "Festnetz, Internet & TV", item: "Up Internet Home L TV M Home", rate: 24.65 },
+            { id: 33, category: "Festnetz, Internet & TV", item: "Up Internet Home M Phone TV L Home", rate: 19.56 },
+            { id: 34, category: "Festnetz, Internet & TV", item: "Up Internet Home M Phone TV M Home", rate: 19.56 },
+            { id: 35, category: "Festnetz, Internet & TV", item: "Up Internet Home M TV L Home", rate: 19.56 },
+            { id: 36, category: "Festnetz, Internet & TV", item: "Up Internet Home MTV M Home", rate: 19.56 },
+            { id: 37, category: "Festnetz, Internet & TV", item: "Up Internet Home plus L Phone TV XL My Sports DE+", rate: 29.47 },
+            { id: 38, category: "Festnetz, Internet & TV", item: "Up Internet Home plus L Phone TV XL My Sports FR+", rate: 29.47 },
+            { id: 39, category: "Festnetz, Internet & TV", item: "Up Internet Home plus L Phone TV XL Netflix+", rate: 29.47 },
+            { id: 40, category: "Festnetz, Internet & TV", item: "Up Internet Home plus L TV XL My Sports DE+", rate: 29.47 },
+            { id: 41, category: "Festnetz, Internet & TV", item: "Up Internet Home plus L TV XL My Sports FR+", rate: 29.47 },
+            { id: 42, category: "Festnetz, Internet & TV", item: "Up Internet Home plus L TV XL Netflix+", rate: 29.47 },
+            { id: 43, category: "Festnetz, Internet & TV", item: "Up Internet Home plus M Phone TV XL My Sports DE+", rate: 24.65 },
+            { id: 44, category: "Festnetz, Internet & TV", item: "Up Internet Home plus M Phone TV XL My Sports FR+", rate: 24.65 },
+            { id: 45, category: "Festnetz, Internet & TV", item: "Up Internet Home plus M Phone TV XL Netflix+", rate: 24.65 },
+            { id: 46, category: "Festnetz, Internet & TV", item: "Up Internet Home plus M TV XL My Sports DE+", rate: 24.65 },
+            { id: 47, category: "Festnetz, Internet & TV", item: "Up Internet Home plus M TV XL My Sports FR+", rate: 24.65 },
+            { id: 48, category: "Festnetz, Internet & TV", item: "Up Internet Home plus M TV XL Netflix+", rate: 24.65 },
+            { id: 49, category: "Festnetz, Internet & TV", item: "Up Internet Home plus XL Phone TV XL My Sports DE+", rate: 31.88 },
+            { id: 50, category: "Festnetz, Internet & TV", item: "Up Internet Home plus XL Phone TV XL My Sports FR+", rate: 31.88 },
+            { id: 51, category: "Festnetz, Internet & TV", item: "Up Internet Home plus XL Phone TV XL Netflix+", rate: 31.88 },
+            { id: 52, category: "Festnetz, Internet & TV", item: "Up Internet Home plus XL TV XL My Sports DE+", rate: 31.88 },
+            { id: 53, category: "Festnetz, Internet & TV", item: "Up Internet Home plus XL TV XL My Sports FR+", rate: 31.88 },
+            { id: 54, category: "Festnetz, Internet & TV", item: "Up Internet Home plus XL TV XL Netflix+", rate: 31.88 },
+            { id: 55, category: "Festnetz, Internet & TV", item: "Up Internet Home XL Phone TV L Home", rate: 27.06 },
+            { id: 56, category: "Festnetz, Internet & TV", item: "Up Internet Home XL Phone TV M Home", rate: 27.06 },
+            { id: 57, category: "Festnetz, Internet & TV", item: "Up Internet Home XL TV L Home", rate: 27.06 },
+            { id: 58, category: "Festnetz, Internet & TV", item: "Up Internet Home XL TV M Home", rate: 27.06 },
+            // Mobile Postpaid Aktivierungen
+            { id: 59, category: "Mobile Postpaid Aktivierungen", item: "Device Plan Duration 12/24 Months", rate: 3.48 },
+            { id: 60, category: "Mobile Postpaid Aktivierungen", item: "Swiss Connect Europe+", rate: 9.65 },
+            { id: 61, category: "Mobile Postpaid Aktivierungen", item: "Swiss Connect Europe+ Young", rate: 9.65 },
+            { id: 62, category: "Mobile Postpaid Aktivierungen", item: "Swiss Connect Global", rate: 10.18 },
+            { id: 63, category: "Mobile Postpaid Aktivierungen", item: "Swiss Connect Global Young", rate: 10.18 },
+            { id: 64, category: "Mobile Postpaid Aktivierungen", item: "Swiss Connect Lite", rate: 4.55 },
+            { id: 65, category: "Mobile Postpaid Aktivierungen", item: "Swiss Connect Neighbors", rate: 8.31 },
+            { id: 66, category: "Mobile Postpaid Aktivierungen", item: "Swiss Connect Neighbors Young", rate: 8.31 },
+            { id: 67, category: "Mobile Postpaid Aktivierungen", item: "Swiss Plus", rate: 6.97 },
+            { id: 68, category: "Mobile Postpaid Aktivierungen", item: "Swiss Travel", rate: 6.97 },
+            { id: 69, category: "Mobile Postpaid Aktivierungen", item: "Swiss Travel+", rate: 6.97 },
+            { id: 70, category: "Mobile Postpaid Aktivierungen", item: "Travel East", rate: 10.98 },
+            { id: 71, category: "Mobile Postpaid Aktivierungen", item: "Up Mobile L", rate: 9.38 },
+            { id: 72, category: "Mobile Postpaid Aktivierungen", item: "Up Mobile L Young", rate: 9.38 },
+            { id: 73, category: "Mobile Postpaid Aktivierungen", item: "Up Mobile M", rate: 9.38 },
+            { id: 74, category: "Mobile Postpaid Aktivierungen", item: "Up Mobile M Light", rate: 9.38 },
+            { id: 75, category: "Mobile Postpaid Aktivierungen", item: "Up Mobile M Young", rate: 9.38 },
+            { id: 76, category: "Mobile Postpaid Aktivierungen", item: "Up Mobile S", rate: 4.02 },
+            { id: 77, category: "Mobile Postpaid Aktivierungen", item: "Up Mobile S Light", rate: 4.02 },
+            { id: 78, category: "Mobile Postpaid Aktivierungen", item: "Up Mobile Swiss 10", rate: 6.70 },
+            { id: 79, category: "Mobile Postpaid Aktivierungen", item: "Up Mobile Swiss 10 Light", rate: 6.70 },
+            { id: 80, category: "Mobile Postpaid Aktivierungen", item: "Up Mobile Swiss 10 Young", rate: 6.70 },
+            { id: 81, category: "Mobile Postpaid Aktivierungen", item: "Up Mobile XL", rate: 9.38 },
+            { id: 82, category: "Mobile Postpaid Aktivierungen", item: "Up Mobile XL Young", rate: 9.38 },
+            { id: 83, category: "Mobile Postpaid Aktivierungen", item: "Up Mobile XS", rate: 4.02 },
+            // Mobile Secondary Aktivierungen
+            { id: 84, category: "Mobile Secondary Aktivierungen", item: "We Connect extra SIM surf", rate: 2.68 },
+            { id: 85, category: "Mobile Secondary Aktivierungen", item: "We Connect extra SIM track", rate: 1.34 },
+            { id: 86, category: "Mobile Secondary Aktivierungen", item: "We Connect extra SIM watch", rate: 2.68 },
+            { id: 87, category: "Mobile Secondary Aktivierungen", item: "We Connect surf", rate: 5.36 },
+            { id: 88, category: "Mobile Secondary Aktivierungen", item: "We Connect track", rate: 1.34 },
+            { id: 89, category: "Mobile Secondary Aktivierungen", item: "We Connect watch", rate: 2.68 },
+            { id: 90, category: "Mobile Secondary Aktivierungen", item: "We Connect WiFi", rate: 6.70 },
+            // ALDI MOBILE
+            { id: 91, category: "ALDI MOBILE", item: "ALDI Abo Basic", rate: 4.00 },
+            { id: 92, category: "ALDI MOBILE", item: "ALDI Abo Medium", rate: 5.50 },
+            { id: 93, category: "ALDI MOBILE", item: "ALDI Abo Swiss Unlimited", rate: 7.00 },
+            { id: 94, category: "ALDI MOBILE", item: "ALDI Abo Swiss Unlimited Extra Plus", rate: 8.00 },
+            { id: 95, category: "ALDI MOBILE", item: "ALDI Abo Swiss Unlimited Extra", rate: 8.00 },
+            { id: 96, category: "ALDI MOBILE", item: "ALDI Abo International", rate: 10.00 },
+            // WIN Upsell
+            { id: 97, category: "WIN Upsell", item: "1", rate: 0.67 },
+            { id: 98, category: "WIN Upsell", item: "2", rate: 1.34 },
+            { id: 99, category: "WIN Upsell", item: "3", rate: 2.68 },
+            { id: 100, category: "WIN Upsell", item: "4", rate: 5.36 },
+            { id: 101, category: "WIN Upsell", item: "5", rate: 10.72 },
+            // Mobile Upsell
+            { id: 102, category: "Mobile Upsell", item: "1", rate: 0.67 },
+            { id: 103, category: "Mobile Upsell", item: "2", rate: 1.34 },
+            { id: 104, category: "Mobile Upsell", item: "3", rate: 2.01 },
+            { id: 105, category: "Mobile Upsell", item: "4", rate: 2.68 },
+            { id: 106, category: "Mobile Upsell", item: "5", rate: 4.02 },
+            // Optionen Festnetz, Internet & TV
+            { id: 107, category: "Optionen Festnetz, Internet & TV", item: "Adult", rate: 3.75 },
+            { id: 108, category: "Optionen Festnetz, Internet & TV", item: "CANAL+ CINÉ SÉRIES", rate: 1.34 },
+            { id: 109, category: "Optionen Festnetz, Internet & TV", item: "CANAL+ LA TOTALE", rate: 1.34 },
+            { id: 110, category: "Optionen Festnetz, Internet & TV", item: "CANAL+ SPORT", rate: 1.34 },
+            { id: 111, category: "Optionen Festnetz, Internet & TV", item: "Disney+ Premium", rate: 1.34 },
+            { id: 112, category: "Optionen Festnetz, Internet & TV", item: "Disney+ Premium Annual", rate: 3.75 },
+            { id: 113, category: "Optionen Festnetz, Internet & TV", item: "Disney+ Standard", rate: 1.34 },
+            { id: 114, category: "Optionen Festnetz, Internet & TV", item: "Disney+ Standard Annual", rate: 3.75 },
+            { id: 115, category: "Optionen Festnetz, Internet & TV", item: "Disney+ Standard with ads", rate: 1.34 },
+            { id: 116, category: "Optionen Festnetz, Internet & TV", item: "EROTIC", rate: 3.75 },
+            { id: 117, category: "Optionen Festnetz, Internet & TV", item: "FERNSEHEN MIT HERZ", rate: 0.27 },
+            { id: 118, category: "Optionen Festnetz, Internet & TV", item: "Herz", rate: 0.27 },
+            { id: 119, category: "Optionen Festnetz, Internet & TV", item: "HZN TV MultiBox", rate: 1.34 },
+            { id: 120, category: "Optionen Festnetz, Internet & TV", item: "LA TOTALE", rate: 1.34 },
+            { id: 121, category: "Optionen Festnetz, Internet & TV", item: "MySports annual", rate: 3.75 },
+            { id: 122, category: "Optionen Festnetz, Internet & TV", item: "MySports monthly", rate: 3.75 },
+            { id: 123, category: "Optionen Festnetz, Internet & TV", item: "MYSPORTS PRO", rate: 3.75 },
+            { id: 124, category: "Optionen Festnetz, Internet & TV", item: "MySports Pro Day-Ticket_HZN", rate: 1.34 },
+            { id: 125, category: "Optionen Festnetz, Internet & TV", item: "Netflix Basic Option", rate: 0.27 },
+            { id: 126, category: "Optionen Festnetz, Internet & TV", item: "Netflix Premium Option", rate: 1.34 },
+            { id: 127, category: "Optionen Festnetz, Internet & TV", item: "Netflix Standard Option", rate: 1.34 },
+            { id: 128, category: "Optionen Festnetz, Internet & TV", item: "Prem Plus DE and MySports DE", rate: 3.75 },
+            { id: 129, category: "Optionen Festnetz, Internet & TV", item: "Prem Plus DE and MySports FR", rate: 3.75 },
+            { id: 130, category: "Optionen Festnetz, Internet & TV", item: "Prem Plus FR and MySports DE", rate: 3.75 },
+            { id: 131, category: "Optionen Festnetz, Internet & TV", item: "Prem Plus FR and MySports FR", rate: 3.75 },
+            { id: 132, category: "Optionen Festnetz, Internet & TV", item: "Prem Plus IT and MySports DE", rate: 3.75 },
+            { id: 133, category: "Optionen Festnetz, Internet & TV", item: "Prem Plus IT and MySports FR", rate: 3.75 },
+            { id: 134, category: "Optionen Festnetz, Internet & TV", item: "Premium Plus DE", rate: 1.34 },
+            { id: 135, category: "Optionen Festnetz, Internet & TV", item: "Premium Plus FR", rate: 1.34 },
+            { id: 136, category: "Optionen Festnetz, Internet & TV", item: "Premium Plus IT", rate: 1.34 },
+            { id: 137, category: "Optionen Festnetz, Internet & TV", item: "Seasons", rate: 0.27 },
+            { id: 138, category: "Optionen Festnetz, Internet & TV", item: "Sunrise Smart WiFi extend", rate: 0.27 },
+            { id: 139, category: "Optionen Festnetz, Internet & TV", item: "Sunrise Smart WiFi start", rate: 1.34 },
+            { id: 140, category: "Optionen Festnetz, Internet & TV", item: "Sunrise TV MultiBox", rate: 1.34 },
+            { id: 141, category: "Optionen Festnetz, Internet & TV", item: "Surf Protect Home", rate: 0.54 },
+            { id: 142, category: "Optionen Festnetz, Internet & TV", item: "UPK & Basic installation", rate: 3.22 },
+            { id: 143, category: "Optionen Festnetz, Internet & TV", item: "UPK & Home installation", rate: 3.22 },
+            { id: 144, category: "Optionen Festnetz, Internet & TV", item: "UPK only", rate: 3.22 },
+            { id: 145, category: "Optionen Festnetz, Internet & TV", item: "Africa HZN", rate: 1.34 },
+            { id: 146, category: "Optionen Festnetz, Internet & TV", item: "albanian", rate: 1.61 },
+            { id: 147, category: "Optionen Festnetz, Internet & TV", item: "Albanica_HZN", rate: 1.34 },
+            { id: 148, category: "Optionen Festnetz, Internet & TV", item: "Arabia_HZN", rate: 1.34 },
+            { id: 149, category: "Optionen Festnetz, Internet & TV", item: "Bosna_HZN", rate: 1.34 },
+            { id: 150, category: "Optionen Festnetz, Internet & TV", item: "Business MultiLine 10", rate: 1.61 },
+            { id: 151, category: "Optionen Festnetz, Internet & TV", item: "Business MultiLine 5", rate: 1.61 },
+            { id: 152, category: "Optionen Festnetz, Internet & TV", item: "Canal+", rate: 1.61 },
+            { id: 153, category: "Optionen Festnetz, Internet & TV", item: "Connection Backup", rate: 1.61 },
+            { id: 154, category: "Optionen Festnetz, Internet & TV", item: "Espanol", rate: 1.61 },
+            { id: 155, category: "Optionen Festnetz, Internet & TV", item: "Espanol_HZN", rate: 1.34 },
+            { id: 156, category: "Optionen Festnetz, Internet & TV", item: "flat austria home", rate: 1.34 },
+            { id: 157, category: "Optionen Festnetz, Internet & TV", item: "flat france home", rate: 1.34 },
+            { id: 158, category: "Optionen Festnetz, Internet & TV", item: "flat germany home", rate: 1.34 },
+            { id: 159, category: "Optionen Festnetz, Internet & TV", item: "flat italy home", rate: 1.34 },
+            { id: 160, category: "Optionen Festnetz, Internet & TV", item: "flat portugal home", rate: 1.34 },
+            { id: 161, category: "Optionen Festnetz, Internet & TV", item: "flat spain home", rate: 1.34 },
+            { id: 162, category: "Optionen Festnetz, Internet & TV", item: "flat united kingdom home", rate: 1.34 },
+            { id: 163, category: "Optionen Festnetz, Internet & TV", item: "flat usa home", rate: 1.34 },
+            { id: 164, category: "Optionen Festnetz, Internet & TV", item: "Hellas_HZN", rate: 1.34 },
+            { id: 165, category: "Optionen Festnetz, Internet & TV", item: "India", rate: 1.61 },
+            { id: 166, category: "Optionen Festnetz, Internet & TV", item: "International basic", rate: 0.27 },
+            { id: 167, category: "Optionen Festnetz, Internet & TV", item: "International global", rate: 0.27 },
+            { id: 168, category: "Optionen Festnetz, Internet & TV", item: "MultiLine 10", rate: 1.61 },
+            { id: 169, category: "Optionen Festnetz, Internet & TV", item: "MultiLine 5", rate: 1.61 },
+            { id: 170, category: "Optionen Festnetz, Internet & TV", item: "MySports Pro DE_HZN", rate: 3.75 },
+            { id: 171, category: "Optionen Festnetz, Internet & TV", item: "MySports Pro FR_HZN", rate: 3.75 },
+            { id: 172, category: "Optionen Festnetz, Internet & TV", item: "MySports Pro French", rate: 1.61 },
+            { id: 173, category: "Optionen Festnetz, Internet & TV", item: "MySports Pro German", rate: 1.61 },
+            { id: 174, category: "Optionen Festnetz, Internet & TV", item: "Nihon HZN", rate: 1.61 },
+            { id: 175, category: "Optionen Festnetz, Internet & TV", item: "Pink Plus", rate: 1.61 },
+            { id: 176, category: "Optionen Festnetz, Internet & TV", item: "Pink Plus_HZN", rate: 1.34 },
+            { id: 177, category: "Optionen Festnetz, Internet & TV", item: "Polska HZN", rate: 1.34 },
+            { id: 178, category: "Optionen Festnetz, Internet & TV", item: "portugues", rate: 1.61 },
+            { id: 179, category: "Optionen Festnetz, Internet & TV", item: "Portuguese Premium", rate: 1.61 },
+            { id: 180, category: "Optionen Festnetz, Internet & TV", item: "Portuguese Premium_HZN", rate: 1.61 },
+            { id: 181, category: "Optionen Festnetz, Internet & TV", item: "Portuguese_HZN", rate: 1.34 },
+            { id: 182, category: "Optionen Festnetz, Internet & TV", item: "Russia", rate: 1.61 },
+            { id: 183, category: "Optionen Festnetz, Internet & TV", item: "Russia HZN", rate: 1.34 },
+            { id: 184, category: "Optionen Festnetz, Internet & TV", item: "SvoD Kids 0-6 French", rate: 1.61 },
+            { id: 185, category: "Optionen Festnetz, Internet & TV", item: "SvoD Kids 0-6 German", rate: 1.61 },
+            { id: 186, category: "Optionen Festnetz, Internet & TV", item: "SvoD Kids 6-12 French", rate: 1.61 },
+            { id: 187, category: "Optionen Festnetz, Internet & TV", item: "SvoD Kids 6-12 German", rate: 1.61 },
+            { id: 188, category: "Optionen Festnetz, Internet & TV", item: "Teleclub Cinema", rate: 3.22 },
+            { id: 189, category: "Optionen Festnetz, Internet & TV", item: "Teleclub Cinema HD", rate: 1.61 },
+            { id: 190, category: "Optionen Festnetz, Internet & TV", item: "Teleclub Entertainment", rate: 1.61 },
+            { id: 191, category: "Optionen Festnetz, Internet & TV", item: "Teleclub Entertainment HD", rate: 1.61 },
+            { id: 192, category: "Optionen Festnetz, Internet & TV", item: "Teleclub Family", rate: 1.61 },
+            { id: 193, category: "Optionen Festnetz, Internet & TV", item: "Teleclub Family HD", rate: 1.61 },
+            { id: 194, category: "Optionen Festnetz, Internet & TV", item: "Teleclub Movie HD", rate: 3.22 },
+            { id: 195, category: "Optionen Festnetz, Internet & TV", item: "Teleclub Sport", rate: 1.61 },
+            { id: 196, category: "Optionen Festnetz, Internet & TV", item: "Teleclub Sport HD", rate: 1.61 },
+            { id: 197, category: "Optionen Festnetz, Internet & TV", item: "Turkish Premium", rate: 1.61 },
+            { id: 198, category: "Optionen Festnetz, Internet & TV", item: "Turkiye_HZN", rate: 1.34 },
+            // Optionen Mobile
+            { id: 199, category: "Optionen Mobile", item: "Apple Music", rate: 0.54 },
+            { id: 200, category: "Optionen Mobile", item: "Business Ready Mobile", rate: 2.68 },
+            { id: 201, category: "Optionen Mobile", item: "Flex Upgrade", rate: 4.29 },
+            { id: 202, category: "Optionen Mobile", item: "Sunrise smart protect", rate: 0.80 },
+            { id: 203, category: "Optionen Mobile", item: "Sunrise smart protect plus", rate: 0.80 },
+            { id: 204, category: "Optionen Mobile", item: "Device & Identity Protect", rate: 2.41 },
+            { id: 205, category: "Optionen Mobile", item: "Device Protect", rate: 1.34 },
+            { id: 206, category: "Optionen Mobile", item: "global", rate: 1.61 },
+            { id: 207, category: "Optionen Mobile", item: "Identity Protect", rate: 1.34 },
+            { id: 208, category: "Optionen Mobile", item: "international talk", rate: 0.27 },
+            { id: 209, category: "Optionen Mobile", item: "intl unlimited EU+/USA/CAN V2", rate: 3.75 },
+            { id: 210, category: "Optionen Mobile", item: "kids protect", rate: 0.54 },
+            { id: 211, category: "Optionen Mobile", item: "my country kosovo", rate: 1.61 },
+            { id: 212, category: "Optionen Mobile", item: "Sunrise call protect", rate: 0.54 },
+            { id: 213, category: "Optionen Mobile", item: "Sunrise call turkey", rate: 1.61 },
+            { id: 214, category: "Optionen Mobile", item: "Sunrise flat austria", rate: 1.34 },
+            { id: 215, category: "Optionen Mobile", item: "Sunrise flat france", rate: 1.34 },
+            { id: 216, category: "Optionen Mobile", item: "Sunrise flat germany", rate: 1.34 },
+            { id: 217, category: "Optionen Mobile", item: "Sunrise flat italy", rate: 1.34 },
+            { id: 218, category: "Optionen Mobile", item: "Sunrise flat portugal", rate: 1.34 },
+            { id: 219, category: "Optionen Mobile", item: "Sunrise flat spain", rate: 1.34 },
+            { id: 220, category: "Optionen Mobile", item: "Sunrise flat united kingdom", rate: 1.61 },
+            { id: 221, category: "Optionen Mobile", item: "Sunrise flat USA", rate: 1.34 },
+            { id: 222, category: "Optionen Mobile", item: "Sunrise international option", rate: 0.27 },
+            { id: 223, category: "Optionen Mobile", item: "Sunrise smart protect", rate: 1.61 },
+            { id: 224, category: "Optionen Mobile", item: "Sunrise smart protect plus", rate: 1.34 },
+            { id: 225, category: "Optionen Mobile", item: "Sunrise speed booster", rate: 0.54 },
+            { id: 226, category: "Optionen Mobile", item: "Sunrise travel days 30", rate: 1.34 },
+            { id: 227, category: "Optionen Mobile", item: "Sunrise travel days 7", rate: 1.61 },
+            { id: 228, category: "Optionen Mobile", item: "travel data 100 reg1 V2", rate: 1.61 },
+            { id: 229, category: "Optionen Mobile", item: "travel data 100MB zone A", rate: 1.61 },
+            { id: 230, category: "Optionen Mobile", item: "travel data 100MB zone B", rate: 1.34 },
+            { id: 231, category: "Optionen Mobile", item: "travel data 100MB zone C", rate: 1.34 },
+            { id: 232, category: "Optionen Mobile", item: "travel data 100MB zone D", rate: 1.34 },
+            { id: 233, category: "Optionen Mobile", item: "travel data 2GB reg1", rate: 1.61 },
+            { id: 234, category: "Optionen Mobile", item: "travel data 2GB zone A", rate: 1.34 },
+            { id: 235, category: "Optionen Mobile", item: "travel data 3GB reg1", rate: 1.61 },
+            { id: 236, category: "Optionen Mobile", item: "travel data 500MB zone A", rate: 0.27 },
+            { id: 237, category: "Optionen Mobile", item: "travel data 500MB zone B", rate: 1.34 },
+            { id: 238, category: "Optionen Mobile", item: "travel data 500MB zone C", rate: 1.34 },
+            { id: 239, category: "Optionen Mobile", item: "travel data 5GB zone A", rate: 1.34 },
+            { id: 240, category: "Optionen Mobile", item: "Travel data L reg 1", rate: 1.34 },
+            { id: 241, category: "Optionen Mobile", item: "Travel data M reg 1", rate: 0.27 },
+            { id: 242, category: "Optionen Mobile", item: "Travel data S reg 1", rate: 0.27 },
+            { id: 243, category: "Optionen Mobile", item: "travel data unlim. 5 borders", rate: 1.61 },
+            { id: 244, category: "Optionen Mobile", item: "Travel data unlimited Europe", rate: 1.34 },
+            { id: 245, category: "Optionen Mobile", item: "travel day pass data", rate: 0.27 },
+            { id: 246, category: "Optionen Mobile", item: "travel talk", rate: 0.27 },
+            { id: 247, category: "Optionen Mobile", item: "travel unltd US/CAN monthly", rate: 1.34 },
+            { id: 248, category: "Optionen Mobile", item: "travel unltd US/CAN yearly", rate: 3.75 },
+            { id: 249, category: "Optionen Mobile", item: "travel voice reg 1", rate: 1.34 }
+        ];
+        
+        // Data structure to hold the selected products (the basket)
+        let salesBasket = [];
+        
+        // Get DOM elements
+        const searchInput = document.getElementById('product-search-input');
+        const suggestionList = document.getElementById('product-suggestion-list');
+        const salesBasketElement = document.getElementById('sales-basket');
+        const totalAmountElement = document.getElementById('total-commission-amount');
+        const selectedMessage = document.getElementById('selected-products-message');
+        
+        /**
+         * Utility function to normalize a string for case-insensitive search.
+         */
+        const normalize = (str) => String(str).trim().toLowerCase();
+
+        /**
+         * Debounce function to limit how often search runs while typing.
+         */
+        const debounce = (func, delay) => {
+            let timeoutId;
+            return (...args) => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => func.apply(this, args), delay);
+            };
+        };
+
+        /**
+         * Recalculates the total commission and updates the display.
+         */
+        function recalculateTotal() {
+            const total = salesBasket.reduce((sum, item) => {
+                return sum + (item.rate * item.quantity);
+            }, 0);
+
+            totalAmountElement.textContent = total.toFixed(2);
+            
+            // Show/hide initial message
+            if (salesBasket.length > 0) {
+                salesBasketElement.classList.remove('hidden');
+                selectedMessage.classList.add('hidden');
+            } else {
+                salesBasketElement.classList.add('hidden');
+                selectedMessage.classList.remove('hidden');
+            }
+        }
+        
+        /**
+         * Adds a selected product to the sales basket or increases its quantity if already present.
+         * @param {number} productId - The unique ID of the product to add.
+         */
+        function addProductToBasket(productId) {
+            const product = COMMISSION_DATA.find(p => p.id === productId);
+            if (!product) return;
+
+            const existingItem = salesBasket.find(item => item.id === productId);
+
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                salesBasket.push({ ...product, quantity: 1 });
+            }
+
+            // Clear search and suggestions
+            searchInput.value = '';
+            suggestionList.classList.add('hidden');
+            
+            renderBasket();
+        }
+        
+        /**
+         * Renders the current state of the sales basket list.
+         */
+        function renderBasket() {
+            salesBasketElement.innerHTML = '';
+            
+            if (salesBasket.length === 0) {
+                recalculateTotal();
+                return;
+            }
+            
+            const listHtml = salesBasket.map(item => `
+                <div id="basket-item-${item.id}" class="flex items-center justify-between py-4">
+                    <!-- Product Info -->
+                    <div class="flex-grow min-w-0 pr-4">
+                        <p class="text-gray-900 font-medium truncate">${item.item}</p>
+                        <p class="text-sm text-gray-500">${item.category}</p>
+                    </div>
+                    
+                    <!-- Controls and Rate -->
+                    <div class="flex items-center space-x-4 min-w-[250px]">
+                        
+                        <!-- Quantity Control -->
+                        <div class="flex items-center">
+                            <label for="qty-${item.id}" class="text-sm text-gray-600 mr-2 min-w-max">Qty:</label>
+                            <input type="number" id="qty-${item.id}" value="${item.quantity}" min="1" 
+                                class="w-16 p-1 text-center border border-gray-300 rounded-md focus:border-brand-primary focus:ring-1"
+                                onchange="updateQuantity(${item.id}, this.value)">
+                        </div>
+                        
+                        <!-- Rate Display -->
+                        <div class="text-right flex-shrink-0">
+                            <p class="text-sm font-medium text-gray-600 leading-none">Rate: CHF ${item.rate.toFixed(2)}</p>
+                            <p class="text-lg font-bold text-gray-800 leading-tight">Total: CHF ${(item.rate * item.quantity).toFixed(2)}</p>
+                        </div>
+                        
+                        <!-- Remove Button -->
+                        <button onclick="removeItem(${item.id})" class="text-gray-400 hover:text-red-500 transition duration-150 p-2 rounded-full">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            salesBasketElement.innerHTML = listHtml;
+            recalculateTotal();
+        }
+
+        /**
+         * Updates the quantity of an item in the basket.
+         * @param {number} productId - The ID of the product.
+         * @param {string} newQtyValue - The new quantity value (as a string from the input).
+         */
+        window.updateQuantity = (productId, newQtyValue) => {
+            let newQty = parseInt(newQtyValue, 10);
+            if (isNaN(newQty) || newQty < 1) {
+                newQty = 1; // Default to 1 if invalid
+                document.getElementById(`qty-${productId}`).value = 1;
+            }
+
+            const item = salesBasket.find(i => i.id === productId);
+            if (item) {
+                item.quantity = newQty;
+                renderBasket();
+            }
+        }
+        
+        /**
+         * Removes an item from the basket.
+         * @param {number} productId - The ID of the product to remove.
+         */
+        window.removeItem = (productId) => {
+            salesBasket = salesBasket.filter(item => item.id !== productId);
+            renderBasket();
+        }
+
+        /**
+         * Clears the entire basket.
+         */
+        window.clearBasket = () => {
+            salesBasket = [];
+            renderBasket();
+        }
+
+        /**
+         * Handles the search logic and renders suggestions.
+         */
+        function handleSearch(query) {
+            const normalizedQuery = normalize(query);
+
+            if (normalizedQuery.length < 2) {
+                suggestionList.classList.add('hidden');
+                suggestionList.innerHTML = '';
+                return;
+            }
+
+            const filteredResults = COMMISSION_DATA.filter(product => 
+                // Check if the query is included in the normalized item name or category
+                normalize(product.item).includes(normalizedQuery) || 
+                normalize(product.category).includes(normalizedQuery)
+            ).slice(0, 10); // Limit to top 10 results
+
+            renderSuggestions(filteredResults);
+        }
+
+        /**
+         * Renders the product suggestions in the dropdown.
+         * @param {Object[]} results - Array of matched commission items.
+         */
+        function renderSuggestions(results) {
+            suggestionList.innerHTML = '';
+
+            if (results.length === 0) {
+                suggestionList.innerHTML = `<div class="p-3 text-sm text-gray-500">No matching products found.</div>`;
+                suggestionList.classList.remove('hidden');
+                return;
+            }
+
+            const suggestionHtml = results.map(product => `
+                <div onclick="addProductToBasket(${product.id})" 
+                     class="flex justify-between items-center p-3 cursor-pointer hover:bg-brand-light/50 transition duration-100 border-b border-gray-100 last:border-b-0">
+                    <div class="min-w-0">
+                        <p class="font-medium text-gray-800 truncate">${product.item}</p>
+                        <p class="text-xs text-gray-500">${product.category}</p>
+                    </div>
+                    <span class="text-sm font-bold text-brand-primary flex-shrink-0 ml-4">CHF ${product.rate.toFixed(2)}</span>
+                </div>
+            `).join('');
+
+            suggestionList.innerHTML = suggestionHtml;
+            suggestionList.classList.remove('hidden');
+        }
+
+        // Debounce the search function
+        const debouncedSearch = debounce((query) => handleSearch(query), 200);
+
+        // Event listener for input changes
+        searchInput.addEventListener('input', (event) => {
+            debouncedSearch(event.target.value);
+        });
+        
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!searchInput.contains(event.target) && !suggestionList.contains(event.target)) {
+                suggestionList.classList.add('hidden');
+            }
+        });
+
+        // Initialize the basket view on load
+        window.onload = renderBasket;
+    </script>
+</body>
+</html>
