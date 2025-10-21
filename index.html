@@ -96,7 +96,7 @@
                     </h2>
                     
                     <div id="total-commission-box" class="text-center p-6 bg-brand-light rounded-lg">
-                        <p class="text-sm font-medium text-gray-700">Estimated Total Commission (CHF)</p>
+                        <p class="text-sm font-medium text-gray-700">Estimated Total Commission (EUR)</p>
                         <p id="total-commission-amount" class="text-5xl font-extrabold text-brand-primary mt-1">0.00</p>
                     </div>
 
@@ -474,8 +474,8 @@
                         
                         <!-- Rate Display -->
                         <div class="text-right flex-shrink-0">
-                            <p class="text-sm font-medium text-gray-600 leading-none">Rate: CHF ${item.rate.toFixed(2)}</p>
-                            <p class="text-lg font-bold text-gray-800 leading-tight">Total: CHF ${(item.rate * item.quantity).toFixed(2)}</p>
+                            <p class="text-sm font-medium text-gray-600 leading-none">Rate: EUR ${item.rate.toFixed(2)}</p>
+                            <p class="text-lg font-bold text-gray-800 leading-tight">Total: EUR ${(item.rate * item.quantity).toFixed(2)}</p>
                         </div>
                         
                         <!-- Remove Button -->
@@ -567,7 +567,7 @@
                         <p class="font-medium text-gray-800 truncate">${product.item}</p>
                         <p class="text-xs text-gray-500">${product.category}</p>
                     </div>
-                    <span class="text-sm font-bold text-brand-primary flex-shrink-0 ml-4">CHF ${product.rate.toFixed(2)}</span>
+                    <span class="text-sm font-bold text-brand-primary flex-shrink-0 ml-4">EUR ${product.rate.toFixed(2)}</span>
                 </div>
             `).join('');
 
@@ -595,3 +595,4 @@
     </script>
 </body>
 </html>
+
